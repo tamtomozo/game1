@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Dungeon RPG - 王都ルミナリア (Town)</title>
+    <link rel="stylesheet" href="css/style.css?v=20261030_06">
+</head>
+
+<body>
+    <div id="flash-overlay"></div>
+
+    <!-- 街 (TOWN) 画面 -->
+    <div class="town-view">
+        <div class="town-title">=== 王都ルミナリア ===</div>
+        <div class="town-subtitle">冒険の拠点・静けさに包まれた平和な街</div>
+        <div class="town-menu">
+            <button class="town-btn" onclick="visitTavern()" style="border-color: #ffaa00; color: #ffaa00;">酒場</button>
+            <button class="town-btn" onclick="visitTraining()" style="border-color: #00ff88; color: #00ff88;">訓練場</button>
+            <button class="town-btn" onclick="visitInn()">宿屋</button>
+            <button class="town-btn" onclick="visitShop()">商店</button>
+            <button class="town-btn" onclick="visitChurch()">教会</button>
+            <button class="town-btn" onclick="showPartyRecord()" style="border-color: #00ffff; color: #00ffff;">パーティの状態を見る</button>
+            <button class="town-btn" onclick="enterDungeon()">ダンジョンへ潜る</button>
+            <button class="town-btn town-btn-secondary" onclick="openDebugMenu()">デバッグメニュー (リセット)</button>
+            <div style="text-align: center; margin-top: 8px; font-size: 11px; color: #888;">
+                [↑]/[↓] で選択・[Space]/[Enter] で決定<br>
+                施設の画面では [↑↓←→] で移動・[1]〜[9] でタブ切り替え・[Esc] でもどる / 閉じる
+            </div>
+            <div style="text-align: center; font-size: 11px; color: #888;">
+                [B] キー または <span onclick="toggleBGM()" style="color: #00ff00; cursor: pointer; text-decoration: underline;">ここをクリック</span> で BGM 切替 (ON/OFF)
+            </div>
+        </div>
+    </div>
+
+    <!-- パーツ: 訓練場 (Training Grounds) -->
+    <div id="part-training"></div>
+
+    <!-- パーツ: 酒場 (Tavern) -->
+    <div id="part-tavern"></div>
+
+    <!-- パーツ: 商店 (Shop) -->
+    <div id="part-shop"></div>
+
+    <!-- パーツ: 教会 (Church) -->
+    <div id="part-church"></div>
+
+    <!-- パーツ: 宿屋 (Inn) -->
+    <div id="part-inn"></div>
+
+    <!-- パーツ: パーティの状態 (Party Record) -->
+    <div id="part-party-record"></div>
+
+    <!-- 画面下部パーティステータスボックス (3列2行) -->
+    <div id="status-box"></div>
+
+    <!-- メッセージボックス -->
+    <div id="message-box">
+        <div id="message-text"></div>
+        <div id="command-list" style="display: none;"></div>
+        <div class="prompt-hint" id="prompt-hint">＊</div>
+    </div>
+
+    <!-- スクリプト読み込み -->
+    <script>window.APP_VERSION = '20261030_06';</script>
+    <script src="js/audio.js?v=20261030_06"></script>
+    <script src="js/storage.js?v=20261030_06"></script>
+    <script src="js/component-loader.js?v=20261030_06"></script>
+    <script src="components/common/status-box/status-box.js?v=20261030_06"></script>
+    <script src="components/common/member-detail/member-detail.js?v=20261030_06"></script>
+    <script src="components/common/message-box/message-box.js?v=20261030_06"></script>
+    <script src="components/common/facility-window/facility-window.js?v=20261030_06"></script>
+    <script src="js/town.js?v=20261030_06"></script>
+    <script src="components/town/training/training.js?v=20261030_06"></script>
+    <script src="components/town/tavern/tavern.js?v=20261030_06"></script>
+    <script src="components/town/shop/shop.js?v=20261030_06"></script>
+    <script src="components/town/church/church.js?v=20261030_06"></script>
+    <script src="components/town/inn/inn.js?v=20261030_06"></script>
+    <script src="components/town/party-record/party-record.js?v=20261030_06"></script>
+
+    <!-- パーツ初期読み込み -->
+    <script>
+        loadComponent('#part-training', 'components/town/training/training.html', null, { replace: true });
+        loadComponent('#part-tavern', 'components/town/tavern/tavern.html', null, { replace: true });
+        loadComponent('#part-shop', 'components/town/shop/shop.html', null, { replace: true });
+        loadComponent('#part-church', 'components/town/church/church.html', null, { replace: true });
+        loadComponent('#part-inn', 'components/town/inn/inn.html', null, { replace: true });
+        loadComponent('#part-party-record', 'components/town/party-record/party-record.html', null, { replace: true });
+    </script>
+</body>
+
+</html>
+

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <noscript><meta http-equiv="refresh" content="0;url=town.html"></noscript>
+    <title>3D Dungeon RPG</title>
+    <script>
+        // ダンジョンの中断セーブ (storage.js の STORAGE_KEY_TEMP) があればダンジョンから再開、なければ街へ
+        let hasTempSave = false;
+        try {
+            hasTempSave = !!localStorage.getItem("wizardry_temp_save");
+        } catch (e) {
+            console.warn("Failed to check temp save:", e);
+        }
+        window.location.replace(hasTempSave ? "dungeon.html" : "town.html");
+    </script>
+</head>
+<body style="background-color: #000; color: #fff; font-family: monospace; display: flex; align-items: center; justify-content: center; height: 100vh;">
+    <p>王都ルミナリアへ移動中... (<a href="town.html" style="color: #00ff00;">こちらをクリック</a>)</p>
+</body>
+</html>

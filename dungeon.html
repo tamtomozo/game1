@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Dungeon RPG - ダンジョン探索</title>
+    <link rel="stylesheet" href="css/style.css?v=20261029_24">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+
+<body>
+    <div id="flash-overlay"></div>
+
+    <!-- 画面下部パーティステータスボックス (3列2行 / POS, DIR含む) -->
+    <div id="status-box"></div>
+
+    <!-- 右側上部コンテナ (操作ガイド & メッセージ履歴) -->
+    <div id="right-sidebar">
+        <!-- 操作ガイド -->
+        <div id="info">
+            [ CONTROLS ]<br>
+            ↑ / W : 前進<br>
+            ↓ / S : 回頭 (後ろを向く)<br>
+            ← / A : 左旋回<br>
+            → / D : 右旋回<br>
+            C : キャンプ (CAMP)<br>
+            M : 魔法メニュー<br>
+            H : 履歴開閉 (LOG)<br>
+            R : 戦闘リピート<br>
+            B : BGM切替 (ON/OFF)
+        </div>
+
+        <!-- メッセージ履歴表示 (20行表示) -->
+        <div id="message-history-container">
+            <div id="message-history-header">
+                <span>[ 迷宮記録 / 20行履歴 ]</span>
+                <span id="log-toggle-btn" onclick="toggleMessageHistory()" title="最小化/展開">[-]</span>
+            </div>
+            <div id="message-history-body">
+                <div id="message-history-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- パーツ: 戦闘システム (Battle: 隊列HUD・モンスター枠・戦闘メッセージ・コマンド) -->
+    <div id="part-battle"></div>
+
+    <!-- パーツ: キャンプ画面 (Camp) -->
+    <div id="part-camp"></div>
+
+    <!-- 探索イベント用イラスト枠 (宝箱・鍵。モンスター枠と同じ見た目) -->
+    <div id="event-frame" class="monster-frame item-frame" style="display: none;">
+        <div class="monster-header">
+            <span id="event-name" class="monster-name"></span>
+        </div>
+        <div class="monster-image-wrapper">
+            <img id="event-img" class="monster-img" src="" alt="">
+        </div>
+    </div>
+
+    <!-- 探索用通常メッセージボックス -->
+    <div id="message-box">
+        <div id="message-text"></div>
+        <div id="command-list" style="display: none;"></div>
+        <div class="prompt-hint" id="prompt-hint">＊</div>
+    </div>
+
+    <!-- スクリプト読み込み -->
+    <script>window.APP_VERSION = '20261030_06';</script>
+    <script src="js/audio.js?v=20261030_06"></script>
+    <script src="js/storage.js?v=20261030_06"></script>
+    <script src="js/component-loader.js?v=20261030_06"></script>
+    <script src="components/common/status-box/status-box.js?v=20261030_06"></script>
+    <script src="components/common/member-detail/member-detail.js?v=20261030_06"></script>
+    <script src="components/dungeon/battle/battle.js?v=20261030_06"></script>
+    <script src="components/dungeon/camp/camp.js?v=20261030_06"></script>
+    <script src="components/dungeon/chest/chest.js?v=20261030_06"></script>
+    <script src="components/dungeon/view3d/view3d.js?v=20261030_06"></script>
+    <script src="js/dungeon.js?v=20261030_06"></script>
+
+    <!-- パーツ初期読み込み -->
+    <script>
+        loadComponent('#part-battle', 'components/dungeon/battle/battle.html', null, { replace: true });
+        loadComponent('#part-camp', 'components/dungeon/camp/camp.html', null, { replace: true });
+    </script>
+</body>
+
+</html>

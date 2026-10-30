@@ -1,0 +1,15 @@
+# 公開するのはゲーム本体だけ
+# (index.html / town.html / dungeon.html / js/ / components/ / css/ / assets/ / audio/*.mp3)
+
+# 作業用の検証・テストスクリプト
+scratch/
+
+# 開発用の資料・旧版
+README.md
+forAI/
+mock/
+audio/README.txt
+
+# Windows・OneDrive が作るファイル
+desktop.ini
+Thumbs.db

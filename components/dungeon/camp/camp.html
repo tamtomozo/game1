@@ -1,0 +1,30 @@
+<!-- キャンプ画面オーバーレイ (CAMP) コンポーネント -->
+<div id="camp-overlay" class="camp-overlay" style="display: none;">
+    <div class="camp-window">
+        <div class="camp-header">
+            <div class="camp-title">=== CAMP (キャンプ) ===</div>
+            <div class="camp-subtitle">迷宮の安全な一角で休息し、態勢を整えている...</div>
+        </div>
+
+        <div class="camp-content">
+            <!-- 左側: メインコマンド一覧 -->
+            <div class="camp-menu" id="camp-menu-list">
+                <div class="camp-menu-item selected" data-cmd="spell"><span class="cursor">▶</span> 1. じゅもん (SPELL)</div>
+                <div class="camp-menu-item" data-cmd="item"><span class="cursor">▶</span> 2. もちもの (ITEM)</div>
+                <div class="camp-menu-item" data-cmd="status"><span class="cursor">▶</span> 3. つよさ (STATUS)</div>
+                <div class="camp-menu-item" data-cmd="leave"><span class="cursor">▶</span> 4. もどる (LEAVE)</div>
+            </div>
+
+            <!-- 右側: サブ詳細パネル -->
+            <div class="camp-panel" id="camp-sub-panel">
+                <div id="camp-panel-content">
+                    <!-- 動的に内容を描画 -->
+                </div>
+            </div>
+        </div>
+
+        <div class="camp-footer">
+            <span id="camp-hint">＊</span>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,16 @@
+<!-- パーティの状態 (Party Record) オーバーレイ (枠は components/common/facility-window/facility-window.js と同じ) -->
+<div id="party-record-overlay" class="facility-overlay" style="display: none;">
+    <div class="facility-window">
+        <div class="facility-header">
+            <div>
+                <div class="facility-title">=== パーティの状態 (Status) ===</div>
+                <div class="facility-subtitle" id="party-record-subtitle">出撃パーティの容態・能力値・装備と、所持金・荷物を確かめる (冒険者を選ぶと詳しいつよさを表示)</div>
+            </div>
+            <div>
+                <button class="facility-action-btn btn-close" onclick="closePartyRecord()">× とじる</button>
+            </div>
+        </div>
+        <div class="facility-content" id="party-record-content"></div>
+        <div class="facility-footer" id="party-record-footer"></div>
+    </div>
+</div>

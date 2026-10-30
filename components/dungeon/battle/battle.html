@@ -1,0 +1,30 @@
+<!-- 迷宮戦闘システム (Battle Component HTML) -->
+<!-- 画面横中央上部: エネミー隊列リスト HUD -->
+<div id="battle-formation-hud" style="display: none;"></div>
+
+<!-- 中央モンスター表示枠 (リアル調イラスト) -->
+<div id="monster-frame" class="monster-frame" style="display: none;">
+    <div class="monster-header">
+        <span id="monster-name" class="monster-name">UNKNOWN</span>
+        <span id="monster-count" class="monster-count" style="display: none;">× 1</span>
+        <div id="monster-hp-container" class="monster-hp-container" style="display: none;">
+            <div id="monster-hp-bar" class="monster-hp-bar"></div>
+        </div>
+    </div>
+    <div class="monster-image-wrapper">
+        <img id="monster-img" class="monster-img" src="" alt="Monster">
+    </div>
+</div>
+
+<!-- 戦闘専用 横長メッセージウィンドウ (1アクション分のみ表示) -->
+<div id="battle-message-box" style="display: none;">
+    <div id="battle-message-text"></div>
+    <div class="prompt-hint" id="battle-message-hint" style="display: none;">＊</div>
+</div>
+
+<!-- 戦闘専用 コマンド選択ウィンドウ (メッセージと完全排他) -->
+<div id="battle-command-box" style="display: none;">
+    <div id="battle-command-header" class="battle-command-header"></div>
+    <div id="battle-command-list" class="battle-command-list"></div>
+    <div id="battle-command-hint" class="battle-command-hint"></div>
+</div>
