@@ -56,6 +56,16 @@
     }
 
     /**
+     * スイートルームの値段 (生きている仲間の最高レベルで決まる。泊まる前のレベルで計算)
+     */
+    function getInnSuiteCost(player) {
+        const { innSuiteCost, innSuiteCostPerLevel, innSuiteCostMax } = GAME_RULES.town;
+        const levels = player.partyMembers.filter(isMemberAlive).map(m => m.level || 1);
+        const topLevel = levels.length > 0 ? Math.max(...levels) : 1;
+        return Math.min(innSuiteCostMax, innSuiteCost + (topLevel - 1) * innSuiteCostPerLevel);
+    }
+
+    /**
      * 宿屋の内容 (左: パーティの様子 / 右: お部屋) を描画
      */
     function renderInnView() {
@@ -63,7 +73,7 @@
         if (!content || !footer) return;
 
         const player = window.player;
-        const suiteCost = GAME_RULES.town.innSuiteCost;
+        const suiteCost = getInnSuiteCost(player);
         const livingMembers = player.partyMembers.filter(isMemberAlive);
 
         let html = `
@@ -139,7 +149,7 @@
 
         const rooms = [
             { type: 'stable', name: '馬小屋', cost: 0, desc: '藁の上で仮眠。呪文の使用回数のみ全回復 (HPは回復しません)' },
-            { type: 'suite', name: 'スイートルーム', cost: suiteCost, desc: 'ふかふかのベッド。HPと呪文の使用回数が完全回復！' }
+            { type: 'suite', name: 'スイートルーム', cost: suiteCost, desc: 'ふかふかのベッド。HPと呪文の使用回数が完全回復！ (値段は仲間の最高レベルで決まります)' }
         ];
         rooms.forEach(room => {
             let actionHtml;
@@ -206,7 +216,7 @@
         const player = window.player;
         if (!player) return;
         const isSuite = (roomType === 'suite');
-        const cost = isSuite ? GAME_RULES.town.innSuiteCost : 0;
+        const cost = isSuite ? getInnSuiteCost(player) : 0;
         const roomName = isSuite ? 'スイートルーム' : '馬小屋';
         const livingMembers = player.partyMembers.filter(isMemberAlive);
         if (livingMembers.length === 0) return;

@@ -527,6 +527,8 @@
 
     // ========================================================
     // モンスターデータ定義
+    // バランスの目安: 「開始直後 (Lv1・初期装備) の戦士がゴブリンと1対1で戦うと五分五分」の強さの 80%。
+    //   ほかのエネミーもゴブリンと同じ割合で強さをそろえている
     // ========================================================
     const MONSTER_TABLE = {
         'B1F': [
@@ -537,9 +539,9 @@
                 levelMin: 1,
                 levelMax: 3,
                 spd: 12,
-                maxHp: 16,
-                atkMin: 3,
-                atkMax: 6,
+                maxHp: 51,
+                atkMin: 10,
+                atkMax: 14,
                 exp: 22,
                 gold: 25,
                 drops: [{ itemId: 'dagger', rate: 0.10 }, { itemId: 'leather_armor', rate: 0.08 }],
@@ -553,9 +555,9 @@
                 levelMin: 2,
                 levelMax: 4,
                 spd: 8,
-                maxHp: 24,
-                atkMin: 5,
-                atkMax: 8,
+                maxHp: 56,
+                atkMin: 10,
+                atkMax: 15,
                 exp: 28,
                 gold: 40,
                 drops: [{ itemId: 'broadsword', rate: 0.08 }, { itemId: 'leather_armor', rate: 0.08 }],
@@ -571,9 +573,9 @@
                 levelMin: 3,
                 levelMax: 5,
                 spd: 9,
-                maxHp: 30,
-                atkMin: 7,
-                atkMax: 10,
+                maxHp: 80,
+                atkMin: 14,
+                atkMax: 19,
                 exp: 38,
                 gold: 55,
                 drops: [{ itemId: 'broadsword', rate: 0.12 }, { itemId: 'chain_mail', rate: 0.08 }],
@@ -587,9 +589,9 @@
                 levelMin: 4,
                 levelMax: 6,
                 spd: 7,
-                maxHp: 38,
-                atkMin: 8,
-                atkMax: 13,
+                maxHp: 84,
+                atkMin: 15,
+                atkMax: 21,
                 exp: 45,
                 gold: 70,
                 drops: [{ itemId: 'battle_axe', rate: 0.10 }, { itemId: 'chain_mail', rate: 0.08 }],
@@ -606,9 +608,9 @@
         levelMin: 6,
         levelMax: 7,
         spd: 14,
-        maxHp: 80,
-        atkMin: 10,
-        atkMax: 16,
+        maxHp: 280,
+        atkMin: 28,
+        atkMax: 37,
         exp: 120,
         gold: 300,
         drops: [{ itemId: 'plate_armor', rate: 1.0 }],

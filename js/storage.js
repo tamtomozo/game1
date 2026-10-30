@@ -21,7 +21,9 @@ const GAME_RULES = {
     town: {
         reviveCost: 80,          // 教会: 死者の復活
         curePoisonCost: 30,      // 教会: 解毒の祈祷
-        innSuiteCost: 50,        // 宿屋: スイートルーム
+        innSuiteCost: 10,        // 宿屋: スイートルーム (Lv1 のときの値段。パーティの最高レベルに応じて上がる)
+        innSuiteCostPerLevel: 20, // 宿屋: スイートルームの値上がり (レベル1ごと)
+        innSuiteCostMax: 200,    // 宿屋: スイートルームの値段の上限
         sellPriceRatio: 0.5,     // 商店: 売値 = 価格 × この割合 (sellPrice 指定がある品はそちら)
         identifyCost: 30         // 商店: 未鑑定の武具の鑑定料 (品によらず一律。値段から正体が分からないように)
     },
