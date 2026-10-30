@@ -21,7 +21,8 @@ const FLOORS = {
         ],
         stairs: {
             '1,1': { isTownExit: true, text: '地上（王都ルミナリア）へ繋がる階段がある。街へ戻りますか？' },
-            '7,3': { targetFloor: 'B2F', targetX: 1, targetZ: 1, targetDir: 2, text: '地下2階へ降りる階段がある。' }
+            // guardian: 倒すまで階段を使えない番人 (battle.js の GUARDIAN_TEMPLATES の ID)
+            '7,3': { targetFloor: 'B2F', targetX: 1, targetZ: 1, targetDir: 2, text: '地下2階へ降りる階段がある。', guardian: 'tomozo_ghost' }
         },
         chests: {
             '7,5': { trap: 'poison', trapName: '毒針の罠', damage: 8, gold: 60, itemId: 'potion' }
@@ -62,7 +63,9 @@ const DUNGEON_COMMANDS = {
     COLLECT_MEMBERS: '遺体のみ回収する',
     COLLECT_LOOT: 'ゴールド・所持品のみ回収',
     RETURN_TO_CAPITAL: '王都へ戻る',
-    CONTINUE: '先へ進む'
+    CONTINUE: '先へ進む',
+    CHALLENGE_GUARDIAN: '戦いを挑む',
+    TURN_BACK: '引き返す'
 };
 
 // --------------------------------------------------------
@@ -121,6 +124,9 @@ function changeFloor(targetFloorId, startX, startZ, startDir) {
     player.gridZ = startZ;
     player.dir = startDir;
     player.currentFloorId = targetFloorId;
+    // 前のフロアの位置へ「後退」しないよう、到着地点を前のマスにしておく
+    player.prevGridX = startX;
+    player.prevGridZ = startZ;
     updateCameraPosition();
 
     updateStatusUI();
@@ -149,6 +155,8 @@ function triggerStairs(x = (player ? player.gridX : 1), z = (player ? player.gri
     const stairInfo = floorData.stairs[`${x},${z}`];
     if (!stairInfo) return false;
 
+    if (stairInfo.guardian && triggerStairGuardian(stairInfo.guardian, x, z)) return true;
+
     showMessage(stairInfo.text);
     // 街へ戻るかを選ぶときは右下の「＊」を出さない
     showCommands(stairInfo.isTownExit
@@ -172,6 +180,31 @@ function triggerStairs(x = (player ? player.gridX : 1), z = (player ? player.gri
     return true;
 }
 window.triggerStairs = triggerStairs;
+
+// 階段の番人 (まだ倒していなければ、挑むか引き返すかを選ばせる。番人の場面を出したら true)
+// 撃破はボスと同じく player.defeatedBosses に「フロアID:x,z」(階段の位置) で記録する
+function triggerStairGuardian(guardianId, x, z) {
+    const key = `${currentFloorId}:${x},${z}`;
+    const guardian = window.GUARDIAN_TEMPLATES && GUARDIAN_TEMPLATES[guardianId];
+    if (!guardian || getDefeatedBossKeys().includes(key)) return false;
+
+    showMessage(guardian.approachMsg || guardian.encounterMsg);
+    showCommands([DUNGEON_COMMANDS.CHALLENGE_GUARDIAN, DUNGEON_COMMANDS.TURN_BACK], (choice) => {
+        hideMessage();
+        if (choice === DUNGEON_COMMANDS.CHALLENGE_GUARDIAN) {
+            triggerGuardianBattle(guardianId, () => {
+                const keys = getDefeatedBossKeys();
+                if (!keys.includes(key)) keys.push(key);
+                saveTempCampPlayer(player);
+            });
+        } else {
+            retreatPlayer(() => {
+                showMessage('気づかれないよう、静かにその場を離れた...');
+            });
+        }
+    });
+    return true;
+}
 
 // --------------------------------------------------------
 // 3. UI & メッセージ・コマンド

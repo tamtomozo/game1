@@ -256,7 +256,15 @@
                 monsterCountEl.style.display = 'none';
             }
         }
-        if (monsterImgEl) monsterImgEl.src = monster.img;
+        if (monsterImgEl) {
+            monsterImgEl.src = monster.img;
+            // 専用の絵がないエネミーは、ほかの絵の色味を変えて使う (imgFilter)
+            monsterImgEl.style.filter = monster.imgFilter || '';
+            // 絵の大きさの倍率 (imgScale)。指定がなければ等倍
+            if (monsterImgEl.parentElement) {
+                monsterImgEl.parentElement.style.setProperty('--monster-img-scale', monster.imgScale || 1);
+            }
+        }
         // HPバーは常に非表示（HPは常に表示不要）
         if (monsterHpBarEl && monsterHpBarEl.parentElement) {
             monsterHpBarEl.parentElement.style.display = 'none';
@@ -601,21 +609,53 @@
         ]
     };
 
+    // ラスボス。Lv30 前後の6人パーティで倒せる強さ
+    // (Lv26 では勝率2割ほど、Lv28 で5割ほど、Lv30 で8割ほど、Lv32 ならまず勝てる)
     const BOSS_MONSTER_TEMPLATE = {
         id: 'demon_lord',
         baseName: '古代の魔王 (Ancient Demon Lord)',
         name: '古代の魔王 (Ancient Demon Lord)',
-        levelMin: 6,
-        levelMax: 7,
-        spd: 14,
-        maxHp: 280,
-        atkMin: 28,
-        atkMax: 37,
+        levelMin: 30,
+        levelMax: 30,
+        spd: 40,
+        maxHp: 2800,
+        atkMin: 110,
+        atkMax: 140,
         exp: 120,
         gold: 300,
         drops: [{ itemId: 'plate_armor', rate: 1.0 }],
         img: 'assets/monsters/demon_lord.jpg',
-        encounterMsg: 'ダンジョンの最奥で、不気味な気配を放つ古代の魔王が立ちふさがった！\n魔王「愚かな冒険者よ、我が領域を侵した罪、万死に値する！」'
+        encounterMsg: 'ダンジョンの最奥で、不気味な気配を放つ古代の魔王が立ちふさがった！\n魔王「愚かな冒険者よ、我が領域を侵した罪、万死に値する！」',
+        canPersuade: true,   // 『扉の鍵』を見せる説得で戦いを終えられる
+        persuadeMinLevel: 30, // 説得する者 (隊列の先頭) のレベルがこれ未満だと、鍵があっても失敗する
+        isFinalBoss: true    // 倒すとダンジョン制覇
+    };
+
+    // 階段などを守るガーディアン (dungeon.js の FLOORS の stairs[...].guardian で ID を指定)
+    // ボスと同じく逃げられない。挑む前に引き返すかを選べる
+    const GUARDIAN_TEMPLATES = {
+        // 地下2階へ降りる階段の番人。Lv20 前後の6人パーティでようやく倒せる強さ
+        // (Lv18 では勝率3割ほど、Lv20 で8割ほど、Lv22 ならまず勝てる)
+        tomozo_ghost: {
+            id: 'tomozo_ghost',
+            baseName: 'トモゾウの怨霊 (Tomozo\'s Wraith)',
+            name: 'トモゾウの怨霊 (Tomozo\'s Wraith)',
+            levelMin: 20,
+            levelMax: 20,
+            spd: 30,
+            maxHp: 2000,
+            atkMin: 90,
+            atkMax: 115,
+            exp: 615,      // ×expRate で約 2400。Lv20 の6人なら1人 400 (ちょうど1レベル分)
+            gold: 1000,
+            drops: [{ itemId: 'plate_armor', rate: 0.5 }],
+            // 専用イラスト: フォークと鎌(釜)を持ったピエロ衣装・メガネの死神
+            img: 'assets/monsters/tomozo_ghost.jpg',
+            imgFilter: '',
+            imgScale: 1.5,
+            encounterMsg: '階段の前の闇が凍りつき、青白い怨霊が姿を現した！\nトモゾウの怨霊「この先へは…行かせぬ…！」',
+            approachMsg: '地下2階へ降りる階段の前に、青白い人影が揺らめいている…\n「トモゾウの怨霊」が階段を守っているようだ。\n\n(ボスと同じく、戦いが始まると逃げられません)'
+        }
     };
 
     // ========================================================
@@ -624,7 +664,7 @@
     /**
      * 敵とプレイヤーのレベル差に基づいて獲得経験値を計算する
      * - 敵レベル > プレイヤーレベル (格上): レベル差1につき +30% のボーナス付与 (レベル差が大きいほど大幅増加)
-     * - 敵レベル < プレイヤーレベル (格下): レベル差1につき -15% 減衰 (最低保証20%)
+     * - 敵レベル < プレイヤーレベル (格下): レベル差1につき -10% 減衰 (最低保証50%)
      * @param {number} baseExp エネミーの基礎経験値
      * @param {number} monsterLevel エネミーのレベル
      * @param {number} playerLevel プレイヤーの現在レベル
@@ -640,8 +680,8 @@
             // 格上撃破ボーナス: レベル差1ごとに+30%増加 (例: Lv差+1で1.3倍、Lv差+2で1.6倍、Lv差+5で2.5倍)
             multiplier = 1.0 + (diff * 0.30);
         } else if (diff < 0) {
-            // 格下撃破補正: レベル差1ごとに-15%減衰 (下限20%)
-            multiplier = Math.max(0.20, 1.0 + (diff * 0.15));
+            // 格下撃破補正: レベル差1ごとに-10%減衰 (下限50%。B1F で稼ぎ続けても Lv20 まで届くように)
+            multiplier = Math.max(0.50, 1.0 + (diff * 0.10));
         }
 
         const finalExp = Math.max(1, Math.round(baseExp * multiplier));
@@ -735,7 +775,7 @@
         const scaledAtkMax = template.atkMax + lvlDelta;
         const baseSpd = template.spd || 10;
         const scaledSpd = baseSpd + Math.floor(lvlDelta * 0.8);
-        const scaledExp = Math.round(template.exp * (1 + lvlDelta * 0.15));
+        const scaledExp = Math.round(template.exp * (1 + lvlDelta * 0.15) * GAME_RULES.battle.expRate);
         const scaledGold = Math.round(template.gold * (1 + lvlDelta * 0.15));
 
         const baseName = template.baseName || template.name.replace(/^Lv\.\d+\s*/, '');
@@ -829,6 +869,9 @@
         } else {
             battleGroups = [createBattleGroup(monsterOrGroups, 1)];
         }
+        // ボス戦の相手 (説得できるか・倒すとダンジョン制覇か・逃走失敗時の名前に使う)
+        const bossTemplate = isBoss ? battleGroups[0].template : null;
+        const bossShortName = bossTemplate ? bossTemplate.baseName.replace(/\s*\(.*\)$/, '') : '';
         defeatedMonsters = [];
         hideBattleCommands();
 
@@ -948,7 +991,7 @@
             const dropText = droppedIds.map(id => `\n★ 『${getUnidentifiedName(id)}』を手に入れた！`).join('');
             const victoryText = `敵を打ち倒した！\n★ ${rewardSummary.totalGainedExp} EXP を獲得！\n★ ${rewardSummary.totalGold} GOLD を手に入れた！`
                 + dropText
-                + (isBoss ? "\n★ ダンジョン制覇！ ★" : "");
+                + (bossTemplate && bossTemplate.isFinalBoss ? "\n★ ダンジョン制覇！ ★" : "");
 
             showBattleMessage(victoryText, true);
         };
@@ -1204,7 +1247,7 @@
                     memberOptions.push(BATTLE_COMMANDS.MAGIC, BATTLE_COMMANDS.DEFEND, BATTLE_COMMANDS.ASSIST);
                 }
                 memberOptions.push(BATTLE_COMMANDS.ITEM);
-                if (isBoss && mIdx === 0) {
+                if (bossTemplate && bossTemplate.canPersuade && mIdx === 0) {
                     memberOptions.push(BATTLE_COMMANDS.PERSUADE);
                 }
                 memberOptions.push(BATTLE_COMMANDS.ESCAPE);
@@ -1659,7 +1702,9 @@
 
                     // --- E. 説得を試みる (ボス戦) ---
                     } else if (act.type === 'persuade') {
-                        if (player.hasKey) {
+                        const persuadeMinLevel = (bossTemplate && bossTemplate.persuadeMinLevel) || 0;
+                        const isLevelEnough = (actor.level || 1) >= persuadeMinLevel;
+                        if (player.hasKey && isLevelEnough) {
                             playVictorySE();
                             const rewardSummary = distributeBattleExpDivided([{
                                 name: target.name,
@@ -1686,7 +1731,9 @@
                             playDamageSE();
                             flashScreen(true);
                             damagePartyMember(actor, GAME_RULES.battle.persuadeFailDamage);
-                            actionMsg = `▶ 説得を試みたが、魔王「戯れ言を！」と雷撃を受けた！(${actor.name}に${GAME_RULES.battle.persuadeFailDamage}のダメージ)`;
+                            actionMsg = player.hasKey
+                                ? `▶ ${actor.name} は『扉の鍵』の古の刻印を見せたが、魔王「その程度の力で古の契約を語るか！」と雷撃を受けた！(${actor.name}に${GAME_RULES.battle.persuadeFailDamage}のダメージ)\n※ 説得には Lv${persuadeMinLevel} 以上の力が必要なようだ`
+                                : `▶ 説得を試みたが、魔王「戯れ言を！」と雷撃を受けた！(${actor.name}に${GAME_RULES.battle.persuadeFailDamage}のダメージ)`;
                             roundLogs.push(actionMsg);
                         }
 
@@ -1696,7 +1743,7 @@
                             playEscapeFailureSE();
                             flashScreen(true);
                             damagePartyMember(actor, GAME_RULES.battle.bossEscapeFailDamage);
-                            actionMsg = `▶ 魔王の圧倒的威圧感の前に逃げ出せない！背後から追撃を受けた！(${actor.name}に${GAME_RULES.battle.bossEscapeFailDamage}のダメージ)`;
+                            actionMsg = `▶ ${bossShortName}の圧倒的威圧感の前に逃げ出せない！背後から追撃を受けた！(${actor.name}に${GAME_RULES.battle.bossEscapeFailDamage}のダメージ)`;
                             roundLogs.push(actionMsg);
                         } else {
                             if (Math.random() < ESCAPE_RATE) {
@@ -1831,6 +1878,14 @@
         });
     }
 
+    // ガーディアン戦 (ボス戦と同じ扱い。倒したら onDefeated で撃破を記録する)
+    function triggerGuardianBattle(guardianId, onDefeated) {
+        const template = GUARDIAN_TEMPLATES[guardianId];
+        if (!template) return false;
+        startBattle([{ template: template, count: 1 }], true, onDefeated);
+        return true;
+    }
+
     function triggerEncounterAPI() {
         const table = MONSTER_TABLE[currentFloorId] || MONSTER_TABLE['B1F'];
         const rand = Math.random();
@@ -1898,9 +1953,11 @@
 
     window.MONSTER_TABLE = MONSTER_TABLE;
     window.BOSS_MONSTER_TEMPLATE = BOSS_MONSTER_TEMPLATE;
+    window.GUARDIAN_TEMPLATES = GUARDIAN_TEMPLATES;
 
     window.startBattle = startBattle;
     window.triggerBossBattle = triggerBossBattle;
+    window.triggerGuardianBattle = triggerGuardianBattle;
     window.triggerEncounterAPI = triggerEncounterAPI;
     window.checkEncounter = checkEncounter;
 

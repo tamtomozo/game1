@@ -1005,10 +1005,11 @@ body.in-battle .member-exp {
 
 .monster-image-wrapper {
     position: relative;
-    width: 250px;
-    height: 250px;
-    max-width: 65vw;
-    max-height: 38vh;
+    /* --monster-img-scale: エネミーごとの絵の倍率 (battle.js のテンプレートの imgScale) */
+    width: calc(250px * var(--monster-img-scale, 1));
+    height: calc(250px * var(--monster-img-scale, 1));
+    max-width: calc(65vw * var(--monster-img-scale, 1));
+    max-height: calc(38vh * var(--monster-img-scale, 1));
     border: 1px solid #444;
     overflow: hidden;
     background: #050505;

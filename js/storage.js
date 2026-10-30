@@ -39,6 +39,7 @@ const GAME_RULES = {
     },
     battle: {
         encounterRate: 0.25,     // 1歩ごとのエンカウント率
+        expRate: 3.9,            // 敵の経験値の倍率 (B1F だけで 200 戦ほどで Lv20 に届くように調整)
         escapeRate: 0.70,        // 逃走成功率
         frontTargetRate: 0.70,   // 敵が前衛を狙う確率 (前衛・後衛の両方に生存者がいるとき)
         defendDamageRate: 0.5,   // 防御中の被ダメージ倍率

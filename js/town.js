@@ -25,6 +25,7 @@ const TOWN_COMMANDS = {
     TURN_BACK: '引き返す',
     RESET_YES: 'はい、リセットする',
     RESET_NO: 'いいえ、やめる',
+    DEBUG_STRONG_PARTY: '強キャラパーティをセット',
     DEBUG_DUNGEON_RESET: 'ダンジョン状態をリセット',
     DEBUG_FULL_RESET: '最初からやり直す (全データ初期化)'
 };
@@ -184,12 +185,14 @@ function proceedToDungeon() {
     window.location.href = 'dungeon.html';
 }
 
-// デバッグメニュー (ダンジョン状態のリセット / 最初からやり直す)
+// デバッグメニュー (強キャラパーティのセット / ダンジョン状態のリセット / 最初からやり直す)
 function openDebugMenu() {
     initAudio();
     showMessage("【デバッグメニュー】\n実行する項目を選んでください。");
-    showCommands([TOWN_COMMANDS.DEBUG_DUNGEON_RESET, TOWN_COMMANDS.DEBUG_FULL_RESET, COMMON_COMMANDS.CANCEL], (choice) => {
-        if (choice === TOWN_COMMANDS.DEBUG_DUNGEON_RESET) {
+    showCommands([TOWN_COMMANDS.DEBUG_STRONG_PARTY, TOWN_COMMANDS.DEBUG_DUNGEON_RESET, TOWN_COMMANDS.DEBUG_FULL_RESET, COMMON_COMMANDS.CANCEL], (choice) => {
+        if (choice === TOWN_COMMANDS.DEBUG_STRONG_PARTY) {
+            chooseDebugPartyLevel();
+        } else if (choice === TOWN_COMMANDS.DEBUG_DUNGEON_RESET) {
             confirmDungeonReset();
         } else if (choice === TOWN_COMMANDS.DEBUG_FULL_RESET) {
             confirmReset();
@@ -197,6 +200,53 @@ function openDebugMenu() {
             hideMessage();
         }
     });
+}
+
+// 強キャラパーティ (デバッグ用。6職業がそろい、各職業で装備できるいちばん強い武具を身につけている)
+const DEBUG_PARTY_LEVELS = [10, 20, 30];
+const DEBUG_PARTY_ID_PREFIX = 'char_debug_';
+const DEBUG_PARTY_SPECS = [
+    { classId: 'fighter', name: '強戦士', attrs: { str: 4, vit: 4, agi: 2 }, weapon: 'battle_axe', armor: 'plate_armor' },
+    { classId: 'knight', name: '強騎士', attrs: { str: 4, vit: 4, agi: 2 }, weapon: 'battle_axe', armor: 'plate_armor' },
+    { classId: 'thief', name: '強盗賊', attrs: { str: 3, vit: 3, agi: 4 }, weapon: 'broadsword', armor: 'leather_armor' },
+    { classId: 'priest', name: '強僧侶', attrs: { pie: 5, vit: 5 }, weapon: 'dagger', armor: 'chain_mail' },
+    { classId: 'mage', name: '強魔術師', attrs: { int: 6, vit: 4 }, weapon: 'dagger', armor: null },
+    { classId: 'bishop', name: '強司祭', attrs: { int: 5, pie: 5 }, weapon: 'dagger', armor: 'leather_armor' }
+];
+
+function chooseDebugPartyLevel() {
+    const options = DEBUG_PARTY_LEVELS.map(lv => `Lv${lv} のパーティ`);
+    showMessage("【強キャラパーティをセット】\nレベルを選んでください。\n（いまのパーティの仲間は名簿に残ります。前にセットした強キャラは名簿から消えます）");
+    showCommands([...options, COMMON_COMMANDS.BACK], (choice) => {
+        const idx = options.indexOf(choice);
+        if (idx === -1) {
+            openDebugMenu();
+            return;
+        }
+        setDebugStrongParty(DEBUG_PARTY_LEVELS[idx]);
+        updateStatusUI();
+        playConfirmSE();
+        showMessage(`Lv${DEBUG_PARTY_LEVELS[idx]} の強キャラパーティをセットしました。\n（HP・呪文の使用回数は全快です）`);
+    });
+}
+
+function setDebugStrongParty(level) {
+    const members = DEBUG_PARTY_SPECS.map((spec, i) => {
+        const m = createCustomCharacter(spec.name, spec.classId, spec.attrs);
+        m.id = `${DEBUG_PARTY_ID_PREFIX}${Date.now()}_${i}`;
+        while (m.level < level) levelUpMember(m, true);
+        m.equippedWeapon = spec.weapon;
+        m.equippedArmor = spec.armor;
+        return m;
+    });
+
+    // 前にセットした強キャラを名簿から消す (迷宮で遭難中の者は遺体の回収ができるよう残す)
+    const roster = loadCharacterRoster().filter(c =>
+        !String(c.id).startsWith(DEBUG_PARTY_ID_PREFIX) || getLostCharacterInfo(c.id));
+    saveCharacterRoster(roster);
+
+    player.partyMembers = members;
+    savePermanentPlayer(player); // 新しい仲間は名簿にも登録される
 }
 
 // ダンジョン状態リセット確認
