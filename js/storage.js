@@ -1176,6 +1176,9 @@ function loadPlayer() {
 function sanitizePlayerSaveData(playerData) {
     if (!playerData) return playerData;
     const copy = Object.assign({}, playerData);
+    // 移動中・イベント中のフラグは画面上の一時状態 (残すと再開時に操作できなくなる)
+    delete copy.isMoving;
+    delete copy.isEventActive;
     if (Array.isArray(copy.partyMembers)) {
         copy.partyMembers = copy.partyMembers.map(m => {
             const mCopy = Object.assign({}, m);

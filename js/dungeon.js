@@ -953,6 +953,7 @@ function movePlayer(forward) {
             isMoveAnimating = false;
 
             updateStatusUI();
+            saveTempCampPlayer(player); // ブラウザを閉じてもこのマスから再開できるよう、一歩ごとに中断セーブ
 
             // 到着後の処理 (遺体の検知 → マスのイベント / エンカウント)
             const continueArrival = () => {
@@ -1104,6 +1105,7 @@ function rotatePlayer(right) {
         player.isMoving = false;
 
         updateStatusUI();
+        saveTempCampPlayer(player);
 
         const corpseOnTile = (typeof getCorpseAt === 'function') ? getCorpseAt(currentFloorId, player.gridX, player.gridZ) : null;
         if (corpseOnTile) {
@@ -1125,6 +1127,7 @@ function turnAroundPlayer() {
         player.isMoving = false;
 
         updateStatusUI();
+        saveTempCampPlayer(player);
 
         const corpseOnTile = (typeof getCorpseAt === 'function') ? getCorpseAt(currentFloorId, player.gridX, player.gridZ) : null;
         if (corpseOnTile) {
@@ -1141,6 +1144,7 @@ function retreatPlayer(onComplete) {
     player.isMoving = false;
     updateCameraPosition();
     updateStatusUI();
+    saveTempCampPlayer(player);
     if (onComplete) onComplete();
 }
 
@@ -1335,8 +1339,21 @@ window.confirmCommand = confirmCommand;
 
 // 開始処理
 window.addEventListener('DOMContentLoaded', () => {
+    // 街からの出撃時は中断セーブが破棄されているため、残っていればブラウザを閉じる前の探索の続き
+    const isResumed = hasTempCampSave();
     player = loadPlayer();
+    // 全滅後にブラウザの「戻る」で来た場合など、パーティがいなければ街へ
+    // (ここで中断セーブを作ると、街とダンジョンの間で戻され続けてしまう)
+    if (player.partyMembers.length === 0) {
+        clearTempCampPlayer();
+        window.location.replace('town.html');
+        return;
+    }
+    player.isMoving = false;
+    player.isEventActive = false;
     loadFloor(player.currentFloorId || 'B1F');
+    // 迷宮に入った時点で中断セーブを作る (このあと一歩も動かずに閉じても、次回はダンジョンから再開)
+    saveTempCampPlayer(player);
 
     // 初期位置設定 (保存されていればその位置、なければ階段前)
     updateCameraPosition();
@@ -1348,7 +1365,9 @@ window.addEventListener('DOMContentLoaded', () => {
         addMessageLog("3D表示を利用できないため、座標表示 (POS / DIR) のみで探索します。", 'important');
     }
     // 入口から始まっても街へ戻る選択肢は出さない (戻るときは足元を調べるか、キャンプを終える)
-    showMessage("ダンジョンへ足を踏み入れた...\n[C] キーでいつでもキャンプ画面を開けます。");
+    showMessage(isResumed
+        ? `${FLOORS[currentFloorId].name}の探索を再開した...\n[C] キーでいつでもキャンプ画面を開けます。`
+        : "ダンジョンへ足を踏み入れた...\n[C] キーでいつでもキャンプ画面を開けます。");
 
     if (typeof playBGM === 'function') {
         playBGM('dungeon');
