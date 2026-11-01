@@ -638,6 +638,8 @@ window.addEventListener('keydown', (e) => {
             moveTownMenuSelection(-1);
         } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
             moveTownMenuSelection(1);
+        } else if (e.key === 't' || e.key === 'T') {
+            openDebugMenu(); // デバッグメニューは画面に出さず、Tキーでだけ開く
         }
     } else if (getOpenFacilityOverlay()) {
         const overlay = getOpenFacilityOverlay();

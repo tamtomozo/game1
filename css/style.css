@@ -597,18 +597,6 @@ body.in-battle .member-exp {
     box-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
 }
 
-.town-btn-secondary {
-    border-color: #666;
-    color: #888;
-}
-
-.town-btn-secondary:hover,
-.town-btn-secondary.selected {
-    background: #444;
-    color: #fff;
-    box-shadow: 0 0 8px #666;
-}
-
 /* 白枠メッセージウィンドウ (下部ステータスボックス直上) */
 #message-box {
     position: absolute;
